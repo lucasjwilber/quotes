@@ -11,7 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import static org.junit.Assert.*;
-import static quotes.App.getRandomQuote;
+import static quotes.App.*;
 
 public class AppTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -29,5 +29,15 @@ public class AppTest {
         //the only substring the quotes all have in common is a "-"...
         assertTrue(outContent.toString().contains("-"));
         assertTrue(outContent.toString().length() > 5);
+    }
+
+    @Test public void getQuoteFromAuthor_getsQuoteFromCorrectAuthor() throws FileNotFoundException {
+        assertTrue(getQuoteFromAuthor("Patrick").contains("Patrick Ness"));
+        assertTrue(getQuoteFromAuthor("Ness").contains("Patrick Ness"));
+    }
+
+    @Test public void getQuoteThatContains_containsGivenString() throws FileNotFoundException {
+        assertTrue(getQuoteThatContains("invisible").contains("What did you do to help the invisible man?"));
+        assertTrue(getQuoteThatContains("breakfast").contains("I wish the whole day were like breakfast"));
     }
 }
