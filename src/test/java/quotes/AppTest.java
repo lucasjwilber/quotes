@@ -3,12 +3,31 @@
  */
 package quotes;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+
 import static org.junit.Assert.*;
+import static quotes.App.getRandomQuote;
 
 public class AppTest {
-    @Test public void testAppHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    @Before
+    public void setUpStreams() {
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @Test public void getRandomQuote_returnsAString() throws FileNotFoundException {
+        assertTrue(getRandomQuote() instanceof String);
+    }
+
+    @Test public void getRandomQuote_printsAStringToTerminal() throws FileNotFoundException {
+        System.out.print(getRandomQuote());
+        //the only substring the quotes all have in common is a "-"...
+        assertTrue(outContent.toString().contains("-"));
+        assertTrue(outContent.toString().length() > 5);
     }
 }

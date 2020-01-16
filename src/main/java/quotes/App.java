@@ -15,23 +15,56 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class App {
-    public App() throws IOException {
-    }
-
-    int lastQuote;
+//    public App() throws IOException {
+//    }
+    public static int lastQuote;
+    public static int randomIndex;
 
     public static String getRandomQuote() throws FileNotFoundException {
         Gson gson = new Gson();
         Quote[] allQuotes = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quote[].class);
 
-        int randomIndex = (int) Math.ceil(Math.random() * allQuotes.length);
+        //avoid using the same quote twice in a row
+        while (randomIndex == lastQuote) {
+            randomIndex = (int) Math.ceil(Math.random() * allQuotes.length);
+        }
+        lastQuote = randomIndex;
 
         return allQuotes[randomIndex].text + "\n-" + allQuotes[randomIndex].author;
     }
 
+    public static String getQuoteFromAuthor(String author) throws FileNotFoundException {
+        Gson gson = new Gson();
+        Quote[] allQuotes = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quote[].class);
+        Quote response = new Quote(new String[]{""}, "computer", "", "no quotes from that author found!");
+
+        int quoteCount = 0;
+        Quote[] quotesFromThatAuthor = new Quote[quoteCount];
+        for (Quote quote : allQuotes) {
+            if (quote.author.equals(author)) {
+                quoteCount++;
+                Quote[] oldQuotes = quotesFromThatAuthor;
+                quotesFromThatAuthor = new Quote[quoteCount];
+                for (int i = 0; i < oldQuotes.length; i++) {
+                    quotesFromThatAuthor[i] = oldQuotes[i];
+                }
+                quotesFromThatAuthor[quoteCount - 1] = quote;
+            }
+        }
+        //don't use the same quote twice in a row
+        while (randomIndex == lastQuote) {
+            randomIndex = (int) Math.ceil(Math.random() * quotesFromThatAuthor.length);
+        }
+        lastQuote = randomIndex;
+
+        return quotesFromThatAuthor[randomIndex].text + "\n-" + quotesFromThatAuthor[randomIndex].author;
+    }
+
+
     public static void main(String[] args) throws FileNotFoundException {
 
-        System.out.println(getRandomQuote());
 
+        System.out.println(getRandomQuote());
+        System.out.println(getQuoteFromAuthor("Patrick Ness"));
     }
 }
