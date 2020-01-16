@@ -37,7 +37,7 @@ public class App {
         Gson gson = new Gson();
         Quote[] allQuotes = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quote[].class);
 
-        int quoteCount = 1;
+        int quoteCount = 0;
         Quote[] quotesFromThatAuthor = new Quote[quoteCount];
         Quote[] oldQuotes;
         for (Quote quote : allQuotes) {
@@ -55,12 +55,36 @@ public class App {
         return quotesFromThatAuthor[randomIndex].text + "\n-" + quotesFromThatAuthor[randomIndex].author;
     }
 
+    public static String getQuoteThatContains(String phrase) throws FileNotFoundException {
+        Gson gson = new Gson();
+        Quote[] allQuotes = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quote[].class);
+
+        int quoteCount = 0;
+        Quote[] quotesWithThatPhrase = new Quote[quoteCount];
+        Quote[] oldQuotes;
+        for (Quote quote : allQuotes) {
+            if (quote.text.contains(phrase)) {
+                quoteCount++;
+                oldQuotes = quotesWithThatPhrase;
+                quotesWithThatPhrase = new Quote[quoteCount];
+                for (int i = 0; i < oldQuotes.length; i++) {
+                    quotesWithThatPhrase[i] = oldQuotes[i];
+                }
+                quotesWithThatPhrase[quoteCount - 1] = quote;
+            }
+        }
+        randomIndex = (int) (Math.random() * quotesWithThatPhrase.length);
+        return quotesWithThatPhrase[randomIndex].text + "\n-" + quotesWithThatPhrase[randomIndex].author;
+    }
+
 
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length == 0) {
             System.out.println(getRandomQuote());
-        } else {
-            System.out.println(getQuoteFromAuthor(args[0]));
+        } else if (args[0].equals("author")) {
+            System.out.println(getQuoteFromAuthor(args[1]));
+        } else if (args[0].equals("contains")) {
+            System.out.println(getQuoteThatContains(args[1]));
         }
     }
 }
