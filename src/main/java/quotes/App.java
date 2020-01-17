@@ -4,19 +4,15 @@
 package quotes;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.bind.util.ISO8601Utils;
+import com.google.gson.JsonObject;
+import netscape.javascript.JSObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class App {
-//    public App() throws IOException {
-//    }
     public static int lastQuote;
     public static int randomIndex;
 
@@ -77,14 +73,41 @@ public class App {
         return quotesWithThatPhrase[randomIndex].text + "\n-" + quotesWithThatPhrase[randomIndex].author;
     }
 
+    public static String getRandomQuoteFromForismatic() {
+        try {
+            URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+
+            try {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                String line = reader.readLine();
+                Gson gson = new Gson();
+                Quote quote = gson.fromJson(line, Quote.class);
+                return quote.quoteText + "\n" + quote.quoteAuthor;
+
+            } catch (IOException e) {
+                System.out.println("error");
+                e.printStackTrace();
+            }
+        } catch (
+        MalformedURLException e) {
+            System.out.println("url is malformed");
+            e.printStackTrace();
+        }
+        return "error connecting to forismatic";
+    }
+
 
     public static void main(String[] args) throws FileNotFoundException {
-        if (args.length == 0) {
-            System.out.println(getRandomQuote());
-        } else if (args[0].equals("author")) {
-            System.out.println(getQuoteFromAuthor(args[1]));
-        } else if (args[0].equals("contains")) {
-            System.out.println(getQuoteThatContains(args[1]));
-        }
+//        if (args.length == 0) {
+//            System.out.println(getRandomQuote());
+//        } else if (args[0].equals("author")) {
+//            System.out.println(getQuoteFromAuthor(args[1]));
+//        } else if (args[0].equals("contains")) {
+//            System.out.println(getQuoteThatContains(args[1]));
+//        }
+        System.out.println(getRandomQuoteFromForismatic());
     }
 }
