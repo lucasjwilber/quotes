@@ -12,5 +12,8 @@ It uses Gson to parse the file and create an array of Quote class objects. It th
 
 -To get a random quote that contains a given word, enter `./gradlew run --args [word]`
 
+-To force a random quote from the local saved file, enter `./gradlew run --args 'local'`
+
+
 Tests were written with help from @dfa:
 https://stackoverflow.com/questions/1119385/junit-test-for-system-out-println

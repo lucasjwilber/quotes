@@ -151,6 +151,8 @@ public class App {
             System.out.println(getQuoteFromAuthor(args[1]));
         } else if (args[0].equals("contains")) {
             System.out.println(getQuoteThatContains(args[1]));
+        } else if (args[0].equals("local")) {
+            System.out.println(getRandomQuote());
         }
     }
 }
