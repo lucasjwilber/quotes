@@ -11,6 +11,9 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class App {
     public static int lastQuote;
@@ -73,41 +76,73 @@ public class App {
         return quotesWithThatPhrase[randomIndex].text + "\n-" + quotesWithThatPhrase[randomIndex].author;
     }
 
-    public static String getRandomQuoteFromForismatic() {
+    public static String getRandomQuoteFromForismatic() throws FileNotFoundException {
         try {
             URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
 
             try {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                //1 second timeout for testing
+                connection.setConnectTimeout(1000);
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                 String line = reader.readLine();
                 Gson gson = new Gson();
+                updateSavedQuotes(line);
+
                 Quote quote = gson.fromJson(line, Quote.class);
                 return quote.quoteText + "\n" + quote.quoteAuthor;
 
             } catch (IOException e) {
-                System.out.println("error");
-                e.printStackTrace();
+//                e.printStackTrace();
+                System.out.println("Couldn't connect to Formismatic, here's a saved quote:");
+                return getRandomQuote();
             }
-        } catch (
-        MalformedURLException e) {
-            System.out.println("url is malformed");
+        } catch (MalformedURLException | FileNotFoundException e) {
             e.printStackTrace();
+            System.out.println("Couldn't find saved quotes.");
+            return getRandomQuote();
         }
-        return "error connecting to forismatic";
     }
 
+    public static void updateSavedQuotes(String quote) throws IOException {
+        StringBuilder newQuote = new StringBuilder();
 
-    public static void main(String[] args) throws FileNotFoundException {
-//        if (args.length == 0) {
-//            System.out.println(getRandomQuote());
-//        } else if (args[0].equals("author")) {
-//            System.out.println(getQuoteFromAuthor(args[1]));
-//        } else if (args[0].equals("contains")) {
-//            System.out.println(getQuoteThatContains(args[1]));
-//        }
-        System.out.println(getRandomQuoteFromForismatic());
+        newQuote.append("[");
+        //replace "quoteAuthor" and "quoteText" with "author" and "text" for compatibility with the other methods
+        quote = quote.replace("quoteAuthor", "author");
+        quote = quote.replace("quoteText", "text");
+        newQuote.append(quote);
+        newQuote.append(",");
+
+        Path path = Paths.get("src/main/resources/recentquotes.json");
+        Scanner scanner = new Scanner(path);
+        StringBuilder oldQuotes = new StringBuilder();
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            oldQuotes.append(line);
+        }
+        //remove the first "["
+        oldQuotes.deleteCharAt(0);
+        newQuote.append(oldQuotes);
+
+        //save file
+        //with help from https://crunchify.com/how-to-write-json-object-to-file-in-java/
+        try (FileWriter file = new FileWriter("src/main/resources/recentquotes.json")) {
+            file.write(newQuote.toString());
+            System.out.println("Successfully updated recentquotes.json\n\n");
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        if (args.length == 0) {
+            System.out.println(getRandomQuoteFromForismatic());
+        } else if (args[0].equals("author")) {
+            System.out.println(getQuoteFromAuthor(args[1]));
+        } else if (args[0].equals("contains")) {
+            System.out.println(getQuoteThatContains(args[1]));
+        }
     }
 }
