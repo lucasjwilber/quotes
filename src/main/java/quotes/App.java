@@ -89,6 +89,8 @@ public class App {
 
                 String line = reader.readLine();
                 Gson gson = new Gson();
+
+                //cache quote
                 updateSavedQuotes(line);
 
                 Quote quote = gson.fromJson(line, Quote.class);
@@ -106,15 +108,19 @@ public class App {
         }
     }
 
-    public static void updateSavedQuotes(String quote) throws IOException {
+    public static String formatQuote(String quote) {
         StringBuilder newQuote = new StringBuilder();
-
         newQuote.append("[");
         //replace "quoteAuthor" and "quoteText" with "author" and "text" for compatibility with the other methods
         quote = quote.replace("quoteAuthor", "author");
         quote = quote.replace("quoteText", "text");
         newQuote.append(quote);
         newQuote.append(",");
+        return newQuote.toString();
+    }
+
+    public static void updateSavedQuotes(String quote) throws IOException {
+        String newQuote = formatQuote(quote);
 
         Path path = Paths.get("src/main/resources/recentquotes.json");
         Scanner scanner = new Scanner(path);
@@ -126,15 +132,17 @@ public class App {
         }
         //remove the first "["
         oldQuotes.deleteCharAt(0);
-        newQuote.append(oldQuotes);
+        oldQuotes.insert(0, newQuote);
 
         //save file
         //with help from https://crunchify.com/how-to-write-json-object-to-file-in-java/
         try (FileWriter file = new FileWriter("src/main/resources/recentquotes.json")) {
-            file.write(newQuote.toString());
+            file.write(oldQuotes.toString());
             System.out.println("Successfully updated recentquotes.json\n\n");
         }
     }
+
+
 
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
