@@ -40,4 +40,9 @@ public class AppTest {
         assertTrue(getQuoteThatContains("invisible").contains("What did you do to help the invisible man?"));
         assertTrue(getQuoteThatContains("breakfast").contains("I wish the whole day were like breakfast"));
     }
+
+    @Test public void getRandomQuoteFromForismatic_printsAString() throws FileNotFoundException {
+        System.out.print(getRandomQuoteFromForismatic());
+        assertTrue(outContent.toString().length() > 5);
+    }
 }

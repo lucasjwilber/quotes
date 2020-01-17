@@ -4,19 +4,18 @@
 package quotes;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.bind.util.ISO8601Utils;
+import com.google.gson.JsonObject;
+import netscape.javascript.JSObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class App {
-//    public App() throws IOException {
-//    }
     public static int lastQuote;
     public static int randomIndex;
 
@@ -77,14 +76,83 @@ public class App {
         return quotesWithThatPhrase[randomIndex].text + "\n-" + quotesWithThatPhrase[randomIndex].author;
     }
 
+    public static String getRandomQuoteFromForismatic() throws FileNotFoundException {
+        try {
+            URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
 
-    public static void main(String[] args) throws FileNotFoundException {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                //1 second timeout for testing
+                connection.setConnectTimeout(1000);
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                String line = reader.readLine();
+                Gson gson = new Gson();
+
+                //cache quote
+                updateSavedQuotes(line);
+
+                Quote quote = gson.fromJson(line, Quote.class);
+                return quote.quoteText + "\n" + quote.quoteAuthor;
+
+            } catch (IOException e) {
+//                e.printStackTrace();
+                System.out.println("Couldn't connect to Formismatic, here's a saved quote:");
+                return getRandomQuote();
+            }
+        } catch (MalformedURLException | FileNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Couldn't find saved quotes.");
+            return getRandomQuote();
+        }
+    }
+
+    public static String formatQuote(String quote) {
+        StringBuilder newQuote = new StringBuilder();
+        newQuote.append("[");
+        //replace "quoteAuthor" and "quoteText" with "author" and "text" for compatibility with the other methods
+        quote = quote.replace("quoteAuthor", "author");
+        quote = quote.replace("quoteText", "text");
+        newQuote.append(quote);
+        newQuote.append(",");
+        return newQuote.toString();
+    }
+
+    public static void updateSavedQuotes(String quote) throws IOException {
+        String newQuote = formatQuote(quote);
+
+        Path path = Paths.get("src/main/resources/recentquotes.json");
+        Scanner scanner = new Scanner(path);
+        StringBuilder oldQuotes = new StringBuilder();
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            oldQuotes.append(line);
+        }
+        //remove the first "["
+        oldQuotes.deleteCharAt(0);
+        oldQuotes.insert(0, newQuote);
+
+        //save file
+        //with help from https://crunchify.com/how-to-write-json-object-to-file-in-java/
+        try (FileWriter file = new FileWriter("src/main/resources/recentquotes.json")) {
+            file.write(oldQuotes.toString());
+            System.out.println("Successfully updated recentquotes.json\n\n");
+        }
+    }
+
+
+
+    public static void main(String[] args) throws IOException {
         if (args.length == 0) {
-            System.out.println(getRandomQuote());
+            System.out.println(getRandomQuoteFromForismatic());
         } else if (args[0].equals("author")) {
             System.out.println(getQuoteFromAuthor(args[1]));
         } else if (args[0].equals("contains")) {
             System.out.println(getQuoteThatContains(args[1]));
+        } else if (args[0].equals("local")) {
+            System.out.println(getRandomQuote());
         }
     }
 }

@@ -1,15 +1,14 @@
 package quotes;
 
 public class Quote {
-    String[] tags;
     String author;
-    String likes;
     String text;
+    String quoteAuthor;
+    String quoteText;
 
-    Quote(String[] tags, String author, String likes, String text){
-        this.tags = tags;
+    //local constructor
+    Quote(String author, String text){
         this.author = author;
-        this.likes = likes;
         this.text = text;
     }
 }
