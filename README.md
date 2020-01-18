@@ -8,9 +8,9 @@ It uses Gson to parse the file and create an array of Quote class objects. It th
 
 -To get a random quote from the Formismatic API (or the local file if that requet times out), enter `./gradlew run`.
 
--To get a random quote from a given author, enter `./gradlew run --args [author]`
+-To get a random quote from a given author, enter `./gradlew run --args '[author]'`
 
--To get a random quote that contains a given word, enter `./gradlew run --args [word]`
+-To get a random quote that contains a given word, enter `./gradlew run --args '[word]'`
 
 -To force a random quote from the local saved file, enter `./gradlew run --args 'local'`
 
